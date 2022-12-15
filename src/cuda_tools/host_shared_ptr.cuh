@@ -22,6 +22,8 @@ struct host_shared_ptr
     void host_allocate(std::size_t size);
     void host_allocate();
     void host_fill(const T val);
+    void host_fill(const std::vector<T>& vec);
+    void print_host_values() const;
     void device_allocate(std::size_t size);
     void device_fill(const T val);
     T* download();

@@ -4,4 +4,5 @@
 
 void baseline_scan(cuda_tools::host_shared_ptr<int> buffer);
 
-void your_scan(cuda_tools::host_shared_ptr<int> buffer);
+void scan_opti_1(cuda_tools::host_shared_ptr<int> buffer);
+

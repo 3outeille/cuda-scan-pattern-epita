@@ -48,7 +48,7 @@ int main(int argc, char** argv)
         constexpr std::tuple scan_to_bench
         {
             "Baseline_scan", &baseline_scan,
-            "Your_scan", &your_scan,
+            "Scan opti 1", &scan_opti_1,
         };
 
         //  / 2 because we store name + function pointer

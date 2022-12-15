@@ -113,4 +113,30 @@ void host_shared_ptr<T>::host_fill(const T val)
                    [val]([[maybe_unused]]T arg){return val;});
 }
 
+// create a function to fill host from a vector
+template <typename T>
+void host_shared_ptr<T>::host_fill(const std::vector<T>& vec)
+{
+    if (host_data_ == nullptr)
+        host_allocate();
+
+    if (vec.size() != size_)
+        throw std::runtime_error("host_shared_ptr::host_fill: vector size does not match host_shared_ptr size");
+
+    std::transform(vec.begin(),
+                   vec.end(),
+                   host_data_,
+                   [](T arg){return arg;});
+}
+
+// print host value
+template <typename T>
+void host_shared_ptr<T>::print_host_values() const
+{
+    for (std::size_t i = 0; i < size_; ++i)
+        std::cout << host_data_[i] << " ";
+
+    std::cout << std::endl;
+}
+
 } // namespace cuda_tools
