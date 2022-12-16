@@ -16,7 +16,7 @@ set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 #set(CMAKE_CUDA_FLAGS "--ptxas-options=-v")
 
 add_library(to_bench
-  src/to_bench.cu
+  src/baseline.cu
   src/opti1.cu
   src/cuda_tools/host_shared_ptr.cu)
 

@@ -40,7 +40,7 @@ int main(int argc, char** argv)
         // TODO : start with 256 to do a block scan then uncomment the bigger size for the grid scan
         constexpr std::array sizes = {
             256,
-            //1048576
+            1024*1024
         };
         
         // Add the name and function to benchmark here

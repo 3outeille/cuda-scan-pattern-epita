@@ -6,19 +6,17 @@
 
 int main(void)
 {
-    int n = 10;
+    int n = 1024 * 1024;
+    // int n = 8;
     std::vector<int> vec(n);
     for (int i = 0; i < n; i++)
         vec[i] = i;
-
+ 
     // Buffer baseline
     cuda_tools::host_shared_ptr<int> buffer_baseline(vec.size());
     buffer_baseline.host_fill(vec);
-    buffer_baseline.print_host_values();
+    // buffer_baseline.print_host_values();
     buffer_baseline.upload();
-    // Total baseline
-    cuda_tools::host_shared_ptr<int> total_baseline(1);
-    total_baseline.host_fill(0);
     // Baseline reduce
     baseline_scan(buffer_baseline);
     // Get result
@@ -35,6 +33,7 @@ int main(void)
 
     // Assert activated only in debug mode
     for (int i = 0; i < n; i++) {
+        // std::cout << "(" << i << ") " << res_baseline[i] << " = " << res[i] << std::endl;
         assert(res_baseline[i] == res[i]);
     }
 

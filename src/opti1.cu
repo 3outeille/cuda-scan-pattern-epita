@@ -4,23 +4,71 @@
 #include "cuda_tools/host_shared_ptr.cuh"
 
 #include <cuda_profiler_api.h>
+#include <iostream>
 
 template <typename T>
-__global__
-void kernel_scan_opti_1(T* buffer, int size)
+__global__ void scan_block(T *buffer, T* last_elt_of_each_scan_block, int size)
 {
-    for (int i = 1; i < size; ++i)
-        buffer[i] += buffer[i - 1];
+    int tid = threadIdx.x;
+    int id = threadIdx.x + (blockIdx.x * blockDim.x);
+
+    __shared__ int shared_memory[1024];
+
+    if (id < size)
+        shared_memory[tid] = buffer[id];
+
+    __syncthreads();
+
+    int x;
+
+    for (unsigned int stride = 1; stride < size; stride *= 2)
+    {
+        if (tid >= stride)
+            x = shared_memory[tid] + shared_memory[tid - stride];
+
+        __syncthreads();
+
+        if (tid >= stride)
+            shared_memory[tid] = x;
+
+        __syncthreads();
+    }
+
+    if (tid == blockDim.x - 1)
+        last_elt_of_each_scan_block[blockIdx.x] = shared_memory[tid];
+
+    if (id < size)
+        buffer[id] = shared_memory[tid];
+}
+
+template <typename T>
+__global__ void add_block(T *buffer, T* tmp)
+{
+    int id = threadIdx.x + (blockIdx.x * blockDim.x);
+    if (blockIdx.x > 0)
+        buffer[id] += tmp[blockIdx.x - 1];
 }
 
 void scan_opti_1(cuda_tools::host_shared_ptr<int> buffer)
 {
+    // (page 17/21) https://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/scan/doc/scan.pdf
     cudaProfilerStart();
 
-	kernel_scan_opti_1<int><<<1, 1>>>(buffer.data_, buffer.size_);
+    constexpr int nb_threads = 1024;
+    const int nb_blocks = (buffer.size_ + nb_threads - 1) / nb_threads;
 
+    cuda_tools::host_shared_ptr<int> tmp(nb_blocks);    
+
+    // Compute Scan for each block + store last elt of each scanned block in `tmp`
+    scan_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp.data_, buffer.size_);
+    cudaDeviceSynchronize();
+    // Compute scan on `tmp`
+    scan_block<int><<<1, nb_blocks>>>(tmp.data_, tmp.data_, nb_blocks);
+    cudaDeviceSynchronize();
+    // Add tmp[i] to all values of scanned block `i+1`
+    add_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp.data_);
     cudaDeviceSynchronize();
     kernel_check_error();
-    
+
     cudaProfilerStop();
 }
