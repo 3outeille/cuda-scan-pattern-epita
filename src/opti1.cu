@@ -7,7 +7,7 @@
 #include <iostream>
 
 template <typename T>
-__global__ void scan_block(T *buffer, T* last_elt_of_each_scan_block, int size)
+static __global__ void scan_block(T *buffer, T* last_elt_of_each_scan_block, int size)
 {
     int tid = threadIdx.x;
     int id = threadIdx.x + (blockIdx.x * blockDim.x);
@@ -42,7 +42,7 @@ __global__ void scan_block(T *buffer, T* last_elt_of_each_scan_block, int size)
 }
 
 template <typename T>
-__global__ void add_block(T *buffer, T* tmp)
+static __global__ void propagate_block(T *buffer, T* tmp)
 {
     int id = threadIdx.x + (blockIdx.x * blockDim.x);
     if (blockIdx.x > 0)
@@ -66,7 +66,7 @@ void scan_opti_1(cuda_tools::host_shared_ptr<int> buffer)
     scan_block<int><<<1, nb_blocks>>>(tmp.data_, tmp.data_, nb_blocks);
     cudaDeviceSynchronize();
     // Add tmp[i] to all values of scanned block `i+1`
-    add_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp.data_);
+    propagate_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp.data_);
     cudaDeviceSynchronize();
     kernel_check_error();
 
