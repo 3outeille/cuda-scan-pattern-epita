@@ -18,6 +18,7 @@ set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 add_library(to_bench
   src/baseline.cu
   src/opti1.cu
+  src/opti2.cu
   src/cuda_tools/host_shared_ptr.cu)
 
 include_directories(src)

@@ -6,8 +6,8 @@
 
 int main(void)
 {
+    // int n = 4 * 4;
     int n = 1024 * 1024;
-    // int n = 8;
     std::vector<int> vec(n);
     for (int i = 0; i < n; i++)
         vec[i] = i;
@@ -26,8 +26,7 @@ int main(void)
     cuda_tools::host_shared_ptr<int> buffer(vec.size());
     buffer.host_fill(vec);
     buffer.upload();
-    // Your reduce
-    scan_opti_1(buffer);
+    scan_opti_2(buffer);
     // Retrieve your result
     int *res = buffer.download();
 

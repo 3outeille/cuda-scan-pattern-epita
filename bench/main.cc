@@ -49,6 +49,7 @@ int main(int argc, char** argv)
         {
             "Baseline_scan", &baseline_scan,
             "Scan opti 1", &scan_opti_1,
+            "Scan opti 2", &scan_opti_2,
         };
 
         //  / 2 because we store name + function pointer
