@@ -52,6 +52,7 @@ static __global__ void propagate_block(T *buffer, T* tmp)
 void scan_opti_1(cuda_tools::host_shared_ptr<int> buffer)
 {
     // (page 17/21) https://developer.download.nvidia.com/compute/cuda/1.1-Beta/x86_website/projects/scan/doc/scan.pdf
+    // Scan-then-propagate
     cudaProfilerStart();
 
     constexpr int nb_threads = 1024;
