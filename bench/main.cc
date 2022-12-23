@@ -51,6 +51,7 @@ int main(int argc, char** argv)
             "Scan opti 1", &scan_opti_1,
             "Scan opti 2", &scan_opti_2,
             "Scan opti 3", &scan_opti_3,
+            "Scan opti 4", &scan_opti_4,
         };
 
         //  / 2 because we store name + function pointer
