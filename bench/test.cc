@@ -6,8 +6,8 @@
 
 int main(void)
 {
-    int n = 4*2;
-    // int n = 1024 * 1024;
+    // int n = 4;
+    int n = 1024 * 1024;
     std::vector<int> vec(n);
     for (int i = 0; i < n; i++)
         vec[i] = i;
@@ -33,8 +33,24 @@ int main(void)
     // Assert activated only in debug mode
     for (int i = 0; i < n; i++) {
         std::cout << "(" << i << ") " << res_baseline[i] << " = " << res[i] << std::endl;
-        // assert(res_baseline[i] == res[i]);
+        assert(res_baseline[i] == res[i]);
     }
 
     return 0;
 }
+
+// if (tid == 0 && blockIdx.x == 0)
+// {
+//     printf("(reduce_size: %d) ", reduce_arr_size);
+//     for (int i = 0; i < reduce_arr_size; i++)
+//         printf("%d ", reduce_arr[i]);
+//     printf("\n");
+// }
+
+// if (tid == 0 && blockIdx.x == 0)
+// {
+//     printf("(buffer_size: %d) ", buffer_size);
+//     for (int i = 0; i < buffer_size; i++)
+//         printf("%d ", buffer[i]);
+//     printf("\n");
+// }
