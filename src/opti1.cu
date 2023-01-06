@@ -62,12 +62,25 @@ void scan_opti_1(cuda_tools::host_shared_ptr<int> buffer)
     cudaMalloc(&tmp, nb_blocks * sizeof(int));
     cudaMemset(tmp, 0, nb_blocks * sizeof(int));
 
+    int *tmp2;
+    cudaMalloc(&tmp2, nb_blocks * sizeof(int));
+    cudaMemset(tmp2, 0, nb_blocks * sizeof(int));
+
     // Compute Scan for each block + store last elt of each scanned block in `tmp`
     scan_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp, buffer.size_);
     cudaDeviceSynchronize();
-    // Compute scan on `tmp`
-    scan_block<int><<<1, nb_blocks>>>(tmp, tmp, nb_blocks);
+    // Compute scan on `tmp` in `tmp2
+    const int nb_blocks_2 = (nb_blocks + nb_threads - 1) / nb_threads;
+    scan_block<int><<<nb_blocks_2, nb_threads>>>(tmp, tmp2, nb_blocks);
     cudaDeviceSynchronize();
+
+    scan_block<int><<<1, nb_blocks_2>>>(tmp2, tmp2, nb_blocks_2);
+    cudaDeviceSynchronize();
+
+    // Add tmp2[i] to all values of scanned block `i+1`
+    propagate_block<int><<<nb_blocks_2, nb_threads>>>(tmp, tmp2);
+    cudaDeviceSynchronize();
+
     // Add tmp[i] to all values of scanned block `i+1`
     propagate_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp);
     cudaDeviceSynchronize();
