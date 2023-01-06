@@ -40,18 +40,20 @@ int main(int argc, char** argv)
         // TODO : start with 256 to do a block scan then uncomment the bigger size for the grid scan
         constexpr std::array sizes = {
             // 256,
-            1024*1024
+            // 1024*1024
+            16777216
         };
         
         // Add the name and function to benchmark here
         // TODO
         constexpr std::tuple scan_to_bench
         {
-            // "Baseline_scan", &baseline_scan,
+            "Baseline_scan", &baseline_scan,
             "Scan opti 1", &scan_opti_1,
             // "Scan opti 2", &scan_opti_2,
-            "Scan opti 3", &scan_opti_3,
+            // "Scan opti 3", &scan_opti_3,
             "Scan opti 4", &scan_opti_4,
+            "Scan opti 5", &scan_opti_5,
         };
 
         //  / 2 because we store name + function pointer
