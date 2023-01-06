@@ -16,6 +16,7 @@ static __global__ void single_pass_chained_scan(T* input, T* tmp, T* status_flag
     // This is to avoid deadlock when block 0 cannot be scheduled on GPU because GPU is full
     if (tid == 0)
         bid = atomicAdd(block_id, 1);
+    
     __syncthreads();
 
     int id = threadIdx.x + (bid * blockDim.x);
@@ -65,20 +66,28 @@ static __global__ void single_pass_chained_scan(T* input, T* tmp, T* status_flag
 
     __syncthreads();
 
+    if (id < input_size)
+        shared_memory[tid] = input[id];
+
+    __syncthreads();
+
     // Scan
     int x;
 
     for (int stride = 1; stride < blockDim.x; stride *= 2) {
-        if (tid >= stride && (id % blockDim.x) != 0)
-            x = input[id] + input[id - stride];
+        if (tid >= stride && tid != 0)
+            x = shared_memory[tid] + shared_memory[tid - stride];
 
         __syncthreads();
 
-        if (tid >= stride && (id % blockDim.x) != 0)
-            input[id] = x;
+        if (tid >= stride && tid != 0)
+            shared_memory[tid] = x;
 
         __syncthreads();
     }
+
+    if (id < input_size)
+        input[id] = shared_memory[tid];
 }
 
 void scan_opti_4(cuda_tools::host_shared_ptr<int> buffer) {
