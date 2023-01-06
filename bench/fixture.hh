@@ -17,7 +17,7 @@ class Fixture
         constexpr int val = 1;
         cuda_tools::host_shared_ptr<int> buffer(size);
 
-        buffer.device_fill(val);
+        // buffer.device_fill(val);
 
         for (auto _ : st)
         {

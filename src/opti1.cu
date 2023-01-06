@@ -58,16 +58,18 @@ void scan_opti_1(cuda_tools::host_shared_ptr<int> buffer)
     constexpr int nb_threads = 1024;
     const int nb_blocks = (buffer.size_ + nb_threads - 1) / nb_threads;
 
-    cuda_tools::host_shared_ptr<int> tmp(nb_blocks);    
+    int *tmp;
+    cudaMalloc(&tmp, nb_blocks * sizeof(int));
+    cudaMemset(tmp, 0, nb_blocks * sizeof(int));
 
     // Compute Scan for each block + store last elt of each scanned block in `tmp`
-    scan_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp.data_, buffer.size_);
+    scan_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp, buffer.size_);
     cudaDeviceSynchronize();
     // Compute scan on `tmp`
-    scan_block<int><<<1, nb_blocks>>>(tmp.data_, tmp.data_, nb_blocks);
+    scan_block<int><<<1, nb_blocks>>>(tmp, tmp, nb_blocks);
     cudaDeviceSynchronize();
     // Add tmp[i] to all values of scanned block `i+1`
-    propagate_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp.data_);
+    propagate_block<int><<<nb_blocks, nb_threads>>>(buffer.data_, tmp);
     cudaDeviceSynchronize();
     kernel_check_error();
 

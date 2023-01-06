@@ -6,11 +6,11 @@
 
 int main(void)
 {
-    // int n = 4;
+    // int n = 64;
     int n = 1024 * 1024;
     std::vector<int> vec(n);
     for (int i = 0; i < n; i++)
-        vec[i] = i;
+        vec[i] = 1;
  
     // Buffer baseline
     cuda_tools::host_shared_ptr<int> buffer_baseline(vec.size());
@@ -32,9 +32,14 @@ int main(void)
 
     // Assert activated only in debug mode
     for (int i = 0; i < n; i++) {
-        std::cout << "(" << i << ") " << res_baseline[i] << " = " << res[i] << std::endl;
-        assert(res_baseline[i] == res[i]);
+        if (res_baseline[i] != res[i])
+        {
+            std::cout << "(" << i << ") " << res_baseline[i] << " = " << res[i] << std::endl;
+            assert(false);
+        }
     }
+
+    std::cout << "OK" << std::endl;
 
     return 0;
 }
