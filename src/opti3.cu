@@ -97,6 +97,7 @@ static __global__ void propagate(T *buffer, T *reduce_arr, int buffer_size)
 void scan_opti_3(cuda_tools::host_shared_ptr<int> buffer)
 {
     // Reduce-then-scan (reduce-scan-scan)
+    // Not working with 2**24 elements
     cudaProfilerStart();
 
     constexpr int nb_threads = 1024;

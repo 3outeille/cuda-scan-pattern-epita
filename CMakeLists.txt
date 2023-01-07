@@ -22,6 +22,8 @@ add_library(to_bench
   src/opti3.cu
   src/opti4.cu
   src/opti5.cu
+  src/opti6.cu
+  src/opti7.cu
   src/cuda_tools/host_shared_ptr.cu)
 
 include_directories(src)
