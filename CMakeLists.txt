@@ -21,6 +21,7 @@ add_library(to_bench
   src/opti2.cu
   src/opti3.cu
   src/opti4.cu
+  src/opti4_slow.cu
   src/opti5.cu
   src/opti6.cu
   src/opti7.cu
