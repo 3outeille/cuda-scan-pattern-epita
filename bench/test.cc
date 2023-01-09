@@ -5,8 +5,8 @@
 #include <iostream>
 
 int main(void) {
-    // int n = 100;
-    int n = 16777216;
+    // int n = 16;
+    int n = 1 * 512;
     std::vector<int> vec(n);
     for (int i = 0; i < n; i++)
         vec[i] = 1;
@@ -25,7 +25,7 @@ int main(void) {
     cuda_tools::host_shared_ptr<int> buffer(vec.size());
     buffer.host_fill(vec);
     buffer.upload();
-    scan_opti_6(buffer);
+    scan_opti_8(buffer);
     // Retrieve your result
     int* res = buffer.download();
 
