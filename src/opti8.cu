@@ -45,7 +45,7 @@ static __global__ void decoupled_look_back_stp_fast(T* input, T* flag, T* record
         __syncthreads();
     }
 
-    // Decoupled look-back (adjacent synchronization)
+    // Decoupled look-back (Sklansky scan)
     __shared__ int value_to_propagate;
 
     if (tid == 0) {
@@ -54,14 +54,10 @@ static __global__ void decoupled_look_back_stp_fast(T* input, T* flag, T* record
         const int nb_flag = nb_step + 1;
 
         // Write local sum to step 0
-        atomicAdd(&record_step_value[bid * nb_flag + 0], current_value);
-
-        // __threadfence_system();
+        atomicAdd(&record_step_value[bid * nb_flag], current_value);
 
         // Set flag to A
         atomicExch(&flag[bid], 1);
-
-        // __threadfence_system();
 
         for (int step = 0; step < nb_step; step += 1) {
             int left = 1 << step;
@@ -71,21 +67,16 @@ static __global__ void decoupled_look_back_stp_fast(T* input, T* flag, T* record
 
                 // Wait for previous block to be done
                 while (atomicAdd(&flag[from], 0) < step + 1) {
-                    // __threadfence_system();
                 }
 
-                // Add value to current step
+                // Add value to current value
                 int from_value = atomicAdd(&record_step_value[from * nb_flag + step], 0);
-
-                // Add value to propagate
                 current_value += from_value;
+
+                // Write current value to step value
                 atomicAdd(&record_step_value[bid * nb_flag + step + 1], current_value);
 
-                // __threadfence_system();
-
                 atomicExch(&flag[bid], step + 2);
-
-                // __threadfence_system();
             }
         }
 
