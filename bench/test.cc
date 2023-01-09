@@ -6,7 +6,7 @@
 
 int main(void) {
     // int n = 16;
-    int n = 1 * 512;
+    int n = 1024 * 1024;
     std::vector<int> vec(n);
     for (int i = 0; i < n; i++)
         vec[i] = 1;

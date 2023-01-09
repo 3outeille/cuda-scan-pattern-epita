@@ -55,7 +55,7 @@ int main(int argc, char** argv)
             // "Scan opti 4", &scan_opti_4,
             // "Scan opti 5", &scan_opti_5,
             // "Scan opti 6", &scan_opti_6,
-            // "Scan opti 7", &scan_opti_7,
+            "Scan opti 7", &scan_opti_7,
             "Scan opti 8", &scan_opti_8,
         };
 

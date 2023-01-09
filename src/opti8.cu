@@ -49,64 +49,47 @@ static __global__ void decoupled_look_back_stp_fast(T* input, T* flag, T* record
     __shared__ int value_to_propagate;
 
     if (tid == 0) {
-        value_to_propagate = shared_memory[BLOCK_SIZE - 1];
+        int current_value = shared_memory[BLOCK_SIZE - 1];
 
         const int nb_flag = nb_step + 1;
 
         // Write local sum to step 0
-        atomicAdd(&record_step_value[bid * nb_flag], value_to_propagate);
+        atomicAdd(&record_step_value[bid * nb_flag + 0], current_value);
 
-        __threadfence_system();
+        // __threadfence_system();
 
         // Set flag to A
         atomicExch(&flag[bid], 1);
-        if (bid == 510)
-            printf("bid %d, set flag to 1\n", bid);
 
-        __threadfence_system();
-
-        int bid_to_debug = 511;
+        // __threadfence_system();
 
         for (int step = 0; step < nb_step; step += 1) {
             int left = 1 << step;
             if ((bid & left) != 0) {
-                if (bid == bid_to_debug)
-                    printf("--> bid %d, begin step %d, value_to_propagate %d\n", bid, step, value_to_propagate);
                 int right = bid >> step;
                 int from = left * right - 1;
 
-                // printf("bid %d, waiting from %d at step %d\n", bid, from, step);
-
-
-                if (bid == bid_to_debug)
-                    printf("- bid %d, step %d, left %d, right %d, from %d\n", bid, step, left, right, from);
-
                 // Wait for previous block to be done
-                while (atomicAdd(&flag[from], 0) != step + 1) {
-                    __threadfence_system();
+                while (atomicAdd(&flag[from], 0) < step + 1) {
+                    // __threadfence_system();
                 }
 
                 // Add value to current step
                 int from_value = atomicAdd(&record_step_value[from * nb_flag + step], 0);
 
                 // Add value to propagate
-                value_to_propagate += from_value;
-                if (bid == bid_to_debug)
-                    printf("- bid %d, step %d, got value from %d, from_value %d\n", bid, step, from, from_value);
-                atomicAdd(&record_step_value[bid * nb_flag + step + 1], value_to_propagate);
+                current_value += from_value;
+                atomicAdd(&record_step_value[bid * nb_flag + step + 1], current_value);
 
-                __threadfence_system();
+                // __threadfence_system();
 
                 atomicExch(&flag[bid], step + 2);
 
-                __threadfence_system();
-
-                if (bid == bid_to_debug)
-                    printf("<-- bid %d, end step %d, value_to_propagate %d\n", bid, step, value_to_propagate);
+                // __threadfence_system();
             }
         }
 
-        value_to_propagate -= shared_memory[BLOCK_SIZE - 1];
+        value_to_propagate = current_value - shared_memory[BLOCK_SIZE - 1];
     }
 
     __syncthreads();
@@ -117,8 +100,8 @@ static __global__ void decoupled_look_back_stp_fast(T* input, T* flag, T* record
 
 void scan_opti_8(cuda_tools::host_shared_ptr<int> buffer) {
     // Decoupled look back using scan_then_propagate
-    // constexpr int nb_threads = 1024;
-    constexpr int nb_threads = 1;
+    constexpr int nb_threads = 1024;
+    // constexpr int nb_threads = 2;
     const int nb_blocks = (buffer.size_ + nb_threads - 1) / nb_threads;
     const int nb_step = std::log2(nb_blocks);
     const int nb_flags = nb_step + 1;
