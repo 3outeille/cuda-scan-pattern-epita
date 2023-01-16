@@ -25,14 +25,12 @@ int main(void) {
     cuda_tools::host_shared_ptr<int> buffer(vec.size());
     buffer.host_fill(vec);
     buffer.upload();
-    scan_opti_8(buffer);
+    scan_thrust(buffer);
     // Retrieve your result
     int* res = buffer.download();
 
     // Assert activated only in debug mode
     for (int i = 0; i < n; i++) {
-        // std::cout << "(" << i << ") " << res_baseline[i] << " = " << res[i] << std::endl;
-        // assert(res_baseline[i] == res[i]);
 
         if (res_baseline[i] != res[i]) {
             std::cout << "WRONG: (" << i << ") " << res_baseline[i] << " = " << res[i] << std::endl;
